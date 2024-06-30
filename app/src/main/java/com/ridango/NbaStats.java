@@ -1,6 +1,7 @@
 package com.ridango;
 
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 class NbaStats {
     public static void main(String[] args) {
@@ -9,7 +10,10 @@ class NbaStats {
             System.exit(1);
         }
 
-        var webDriver = new ChromeDriver();
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless=new");
+        var webDriver = new ChromeDriver(options);
+
         for (String player : args) {
             tryFetchAndPrintStatsFor(webDriver, player, "3PA");
         }
