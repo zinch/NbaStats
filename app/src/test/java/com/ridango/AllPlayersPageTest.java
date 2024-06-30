@@ -19,16 +19,14 @@ import org.openqa.selenium.WebElement;
 import java.util.List;
 
 @RunWith(MockitoJUnitRunner.class)
-public class PlayersStatisticsPageTest {
-    @Mock
-    private WebDriver webDriver;
-    @Captor
-    private ArgumentCaptor<By> matcherCaptor;
+public class AllPlayersPageTest {
+    @Mock private WebDriver webDriver;
+    @Captor private ArgumentCaptor<By> matcherCaptor;
 
     @Test
     public void should_return_multiple_urls_if_search_matches_multiple_players() {
         // given
-        var playerStatisticsPage = new PlayersStatisticsPage(webDriver);
+        var playerStatisticsPage = new AllPlayersPage(webDriver);
 
         var firstEl = mockAnchor("https://www.nba.com/stats/player/1629029/");
         var secondEl = mockAnchor("https://www.nba.com/stats/player/1630568/");
@@ -41,6 +39,11 @@ public class PlayersStatisticsPageTest {
         // then
         verify(webDriver, times(1)).get("https://www.nba.com/stats/players/traditional?CF=PLAYER_NAME*E*Luka");
         assertThat(urls).hasSize(2);
+
+        var matcher = matcherCaptor.getValue();
+        assertThat(matcher).isInstanceOf(By.ByLinkText.class);
+        assertThat(((By.ByLinkText) matcher).getRemoteParameters()).asString()
+                .isEqualTo("[link text: Luka]");
     }
 
     private WebElement mockAnchor(String href) {

@@ -1,7 +1,10 @@
 package com.ridango;
 
+import com.ridango.domain.Result;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
+
+import java.time.Duration;
+import java.util.List;
 
 class NbaStats {
     public static void main(String[] args) {
@@ -10,9 +13,7 @@ class NbaStats {
             System.exit(1);
         }
 
-        ChromeOptions options = new ChromeOptions();
-        options.addArguments("--headless=new");
-        var webDriver = new ChromeDriver(options);
+        var webDriver = initWebDriver();
 
         for (String player : args) {
             tryFetchAndPrintStatsFor(webDriver, player, "3PA");
@@ -20,14 +21,33 @@ class NbaStats {
         webDriver.quit();
     }
 
-    private static void tryFetchAndPrintStatsFor(
-            ChromeDriver webDriver, String player, String stats)
-    {
+    private static ChromeDriver initWebDriver() {
+        var webDriver = new ChromeDriver();
+        webDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(3));
+        return webDriver;
+    }
+
+    private static void tryFetchAndPrintStatsFor(ChromeDriver webDriver, String playerSearch, String stats) {
         try {
-            PlayersStatisticsPage playersStatisticsPage = new PlayersStatisticsPage(webDriver);
-            var urls = playersStatisticsPage.findStatisticsLinksMatching(player);
+            var allPlayersPage = new AllPlayersPage(webDriver);
+            var players = allPlayersPage.findStatisticsLinksMatching(playerSearch);
+            if (players.size() == 1) {
+                print(new PlayerPage(webDriver, players.get(0)).fetchStats(stats));
+            } else {
+                for (var player : players) {
+                    System.out.println(player);
+                    print(new PlayerPage(webDriver, player).fetchStats(stats));
+                    System.out.println();
+                }
+            }
         } catch (Exception e) {
             System.err.println(e.getMessage());
+        }
+    }
+
+    private static void print(List<Result> results) {
+        for (var result : results) {
+            System.out.println(result.season() + " " + result.value());
         }
     }
 
