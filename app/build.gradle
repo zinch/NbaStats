@@ -13,12 +13,10 @@ plugins {
 }
 
 repositories {
-    // Use Maven Central for resolving dependencies.
     mavenCentral()
 }
 
 dependencies {
-    // https://mvnrepository.com/artifact/org.seleniumhq.selenium/selenium-java
     implementation group: 'org.seleniumhq.selenium', name: 'selenium-java', version: '4.22.0'
 
     testImplementation libs.junit

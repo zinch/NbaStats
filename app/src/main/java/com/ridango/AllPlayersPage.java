@@ -7,8 +7,8 @@ import org.openqa.selenium.WebElement;
 
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 class AllPlayersPage {
     private static final String NBA_PLAYERS_SEARCH_URL_TEMPLATE
@@ -19,15 +19,15 @@ class AllPlayersPage {
         this.webDriver = Objects.requireNonNull(webDriver);
     }
 
-    public List<Player> findStatisticsLinksMatching(String player) {
-        var urlSafePlayer = URLEncoder.encode(player, StandardCharsets.UTF_8);
+    public Optional<Player> findPlayerByName(String playerName) {
+        var urlSafePlayer = URLEncoder.encode(playerName, StandardCharsets.UTF_8);
         var playerSearchUrl = NBA_PLAYERS_SEARCH_URL_TEMPLATE.formatted(urlSafePlayer);
         webDriver.get(playerSearchUrl);
 
-        return webDriver.findElements(new By.ByLinkText(player)).stream()
+        return webDriver.findElements(new By.ByLinkText(playerName)).stream()
                 .filter(AllPlayersPage::isAnchor)
                 .map(el -> new Player(el.getText(), el.getAttribute("href")))
-                .toList();
+                .findFirst();
     }
 
     private static boolean isAnchor(WebElement el) {

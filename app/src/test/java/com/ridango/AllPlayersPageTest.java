@@ -6,6 +6,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.ridango.domain.Player;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -28,17 +29,18 @@ public class AllPlayersPageTest {
         // given
         var playerStatisticsPage = new AllPlayersPage(webDriver);
 
-        var firstEl = mockAnchor("https://www.nba.com/stats/player/1629029/");
-        var secondEl = mockAnchor("https://www.nba.com/stats/player/1630568/");
+        var firstEl = mockAnchor("Luka Doncic", "https://www.nba.com/stats/player/1629029/");
+        var secondEl = mockAnchor("Luka Garza", "https://www.nba.com/stats/player/1630568/");
         when(webDriver.findElements(matcherCaptor.capture()))
                 .thenReturn(List.of(firstEl, secondEl));
 
         // when
-        var urls = playerStatisticsPage.findStatisticsLinksMatching("Luka");
+        var maybePlayer = playerStatisticsPage.findPlayerByName("Luka");
 
         // then
         verify(webDriver, times(1)).get("https://www.nba.com/stats/players/traditional?CF=PLAYER_NAME*E*Luka");
-        assertThat(urls).hasSize(2);
+        assertThat(maybePlayer).isPresent();
+        assertThat(maybePlayer.orElseThrow()).isEqualTo(new Player("Luka Doncic", "https://www.nba.com/stats/player/1629029/"));
 
         var matcher = matcherCaptor.getValue();
         assertThat(matcher).isInstanceOf(By.ByLinkText.class);
@@ -46,9 +48,10 @@ public class AllPlayersPageTest {
                 .isEqualTo("[link text: Luka]");
     }
 
-    private WebElement mockAnchor(String href) {
+    private WebElement mockAnchor(String playerName, String href) {
         var el = mock(WebElement.class);
         when(el.getAttribute("href")).thenReturn(href);
+        when(el.getText()).thenReturn(playerName);
         when(el.getTagName()).thenReturn("a");
         return el;
     }

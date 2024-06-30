@@ -23,23 +23,17 @@ class NbaStats {
 
     private static ChromeDriver initWebDriver() {
         var webDriver = new ChromeDriver();
-        webDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(3));
+        webDriver.manage().timeouts().implicitlyWait(Duration.ofSeconds(5));
         return webDriver;
     }
 
     private static void tryFetchAndPrintStatsFor(ChromeDriver webDriver, String playerSearch, String stats) {
         try {
             var allPlayersPage = new AllPlayersPage(webDriver);
-            var players = allPlayersPage.findStatisticsLinksMatching(playerSearch);
-            if (players.size() == 1) {
-                print(new PlayerPage(webDriver, players.get(0)).fetchStats(stats));
-            } else {
-                for (var player : players) {
-                    System.out.println(player);
-                    print(new PlayerPage(webDriver, player).fetchStats(stats));
-                    System.out.println();
-                }
-            }
+            var player = allPlayersPage.findPlayerByName(playerSearch);
+            player.map(p -> new PlayerPage(webDriver, p))
+                    .map(page -> page.fetchStats(stats))
+                    .ifPresent(NbaStats::print);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
